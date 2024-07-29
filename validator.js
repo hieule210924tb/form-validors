@@ -18,9 +18,36 @@ function Validator(options){
         errorElement.innerText='';
         inputElement.parentElement.classList.remove('invalid');
     }
+    return !errorMessage;
 }
   var formElement = document.querySelector(options.form);
   if(formElement){
+    formElement.onsubmit = function(e){
+     e.preventDefault();
+     var isFormValid = true;
+    //  Lặp qua từng rules và validate
+    options.rules.forEach(function(rule){
+        var inputElement = formElement.querySelector(rule.selector);
+        var isValid=  validate(inputElement, rule);
+        if(!isValid){
+            isFormValid = false;
+        }
+    });
+       if(isFormValid){
+        // Trường hợp submit với javascript 
+         if(typeof options.onSubmit==="function"){
+            var enableInputs= formElement.querySelector('[name]:not([disabled])');
+            var formValues =Array.from(enableInputs).reduce(function(values, input){
+                return (values[input.name] = input.value) && values;
+            }, {});
+            options.onSubmit(formValues)
+         }
+        //  Trường hơp submit với hành vi mặc định
+         else{
+            formElement.submit();s
+         }
+       }
+    }
     options.rules.forEach(function(rule){
         //Lưu lại các rule cho mỗi input
         if(Array.isArray(selectorRules[rule.selector])){
@@ -64,7 +91,7 @@ Validator.minLength =function(selector, min ,message ){
     return {
         selector:selector,
         test: function(value){
-            return value.lenght > min ? undefined: message || `Vui lòng nhập vào tối thiểu ${min}`
+            return value.length >= min ? undefined: message || `Vui lòng nhập vào tối thiểu ${min}`
         }
     }
 }
